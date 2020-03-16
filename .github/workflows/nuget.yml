@@ -1,4 +1,4 @@
-name: Publish Nuget
+name: Nuget
 
 on:
   push:
@@ -17,18 +17,15 @@ jobs:
         dotnet-version: 3.1.102
     - name: Determine version
       run: echo "::set-env name=VERSION::$(git describe --tags --dirty)"
-    - name: Restore tools
-      run: dotnet tool restore
-    - name: Verify code format
-      run: dotnet dotnet-format --dry-run --check
+    - name: Show version
+      run: echo 'Version: ${VERSION:1}
     - name: Build with dotnet
       run: dotnet build --configuration Release
-    - name: Test with dotnet
-      run: dotnet test --no-build --configuration Release
     - name: Pack
       run: dotnet pack --output ./artifacts --configuration Release -p:Version=${VERSION:1}
-    - name: Publish
-      uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v1
       with:
         name: artifacts
         path: ./artifacts
+    - name: Publish to github
+      run: dotnet nuget push './artifacts/MailerQ.${VERSION:1}.nupkg' --source 'github'
